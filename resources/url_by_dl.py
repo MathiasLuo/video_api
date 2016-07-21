@@ -1,8 +1,8 @@
 import json
 import time
-from flask import request
 from flask_restful import Resource
 
+from common.base_parser import urlParse
 from common.errors import ArgException
 from common.util import getJsonByUrl, getVideoJsonInfo
 
@@ -10,12 +10,14 @@ from common.util import getJsonByUrl, getVideoJsonInfo
 class Url(Resource):
     def post(self):
         time1 = time.time()
-        url = request.form['url']
+        parse = urlParse.copy()
+        args = parse.parse_args()
+        url = args['url']
         j = getJsonByUrl(url)
         if len(j) == 0:
             raise ArgException
-        if 'time' in request.form:
-            if request.form['time']:
+        if 'time' in args:
+            if args['time']:
                 content = []
                 for key in j.keys():
                     urls_json = []
