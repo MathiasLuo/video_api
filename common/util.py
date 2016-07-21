@@ -73,3 +73,19 @@ def getUrls(str_url):
                 s = ss.replace("'", "").split(',')
                 return s
         return []
+
+
+def getTimeUrls(urls):
+    urls_json = []
+    for index in range(len(urls)):
+        u = urls[index].strip()
+        video_json = json.loads(getVideoJsonInfo("%s" % u))
+        time_length = video_json['format']['duration']
+        file_size = video_json['format']['size']
+        urls_json.append({
+            "size": file_size,
+            "seconds": time_length,
+            "number": index,
+            "url": u
+        })
+        return urls_json

@@ -1,6 +1,6 @@
-from flask.ext import restful
+from flask_restful import Resource
 
 
-class HelloWorld(restful.Resource):
+class HelloWorld(Resource):
     def get(self):
         return "hello world"

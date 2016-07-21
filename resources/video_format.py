@@ -1,23 +1,16 @@
-import re
 from flask import request
-from flask.ext import restful
+from flask_restful import Resource
 
+from common.errors import ArgException
 from common.util import getVideoFormats
 
 
-class Format(restful.Resource):
+class Format(Resource):
     def post(self):
-        try:
-            url = request.form['url']
-            data = getVideoFormats(url)
-            return {'format': data,
-                    'status': 'success'
-                    }
-        except TimeoutError:
-            return {
-                'error': 'time out',
-                'status': 'fail'
-            }
-        except:
-            return {'error': 'args error',
-                    'status': 'fail'}
+        url = request.form['url']
+        data = getVideoFormats(url)
+        if len(data) == 0:
+            raise ArgException
+        return {'status': 200,
+                'result': 'success',
+                'format': data}

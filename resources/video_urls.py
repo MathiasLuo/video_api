@@ -1,53 +1,34 @@
-import json
-import re
 import time
 
-import sys
 from flask import request
-from flask.ext import restful
+from flask_restful import Resource
 
-from common.util import getVideoByFormat, getNormalVideoByUrl
-from common.util import getVideoJsonInfo
+from common.errors import ArgException
+from common.util import getVideoByFormat, getNormalVideoByUrl, getTimeUrls
 
 
-class Urls(restful.Resource):
+class Urls(Resource):
     def post(self):
-        try:
-            time1 = time.time()
-            url = request.form['url']
-            if 'format' in request.form:
-                ft = request.form['format']
-                video_list = getVideoByFormat(url, ft)
-            else:
-                video_list = getNormalVideoByUrl(url)
-            print(video_list)
-            if 'time' in request.form:
-                if request.form['time']:
-                    urls_json = []
-                    for index in range(len(video_list)):
-                        u = video_list[index].strip()
-                        video_json = json.loads(getVideoJsonInfo("%s" % u))
-                        time_length = video_json['format']['duration']
-                        file_size = video_json['format']['size']
-                        urls_json.append({
-                            "size": file_size,
-                            "seconds": time_length,
-                            "number": index,
-                            "url": u
-                        })
-                    time2 = time.time()
-                    return {'content': urls_json,
-                            'status': 'success',
-                            'parse_time': time2 - time1}
-            time2 = time.time()
-            return {'url': video_list,
-                    'parse_time': time2 - time1,
-                    'status': 'success'}
-        except TimeoutError:
-            return {
-                'error': 'time out',
-                'status': 'fail'
-            }
-        except:
-            return {'error': 'args error',
-                    'status': 'fail'}
+        time1 = time.time()
+        url = request.form['url']
+        if 'format' in request.form:
+            ft = request.form['format']
+            video_list = getVideoByFormat(url, ft)
+        else:
+            video_list = getNormalVideoByUrl(url)
+        if len(video_list == 0):
+            raise ArgException
+        if 'time' in request.form:
+            if request.form['time']:
+                urls_json = getTimeUrls(video_list)
+                time2 = time.time()
+                return {
+                    'status': 200,
+                    'result': 'success',
+                    'content': urls_json,
+                    'parse_time': time2 - time1}
+        time2 = time.time()
+        return {'status': 200,
+                'result': 'success',
+                'url': video_list,
+                'parse_time': time2 - time1}
